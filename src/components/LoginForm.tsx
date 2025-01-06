@@ -1,14 +1,15 @@
 import React from "react";
+import Cookies from 'js-cookie';
+import { useNavigate } from "react-router";
 import { useForm } from "react-hook-form";
 import { Card, CardHeader, CardTitle, CardContent, CardFooter} from "@/components/ui/card";
 import { Button } from "./ui/button";
 import { Input } from "./ui/input";
 import { NavLink } from "react-router";
+import LoginResponse from "@/types/LoginResponse";
+import { CheckAuth } from "@/lib/checkUser";
+import { LoginFormValues } from "@/types/LoginFormValues";
 
-interface LoginFormValues {
-  email: string;
-  password: string;
-}
 
 const LoginForm: React.FC = () => {
   const {
@@ -17,8 +18,43 @@ const LoginForm: React.FC = () => {
     formState: { errors, isSubmitting },
   } = useForm<LoginFormValues>();
 
+  const navigate = useNavigate();
+
+  const isLoggedIn = CheckAuth()
+  if (isLoggedIn){
+    navigate("/")
+  }
+
   const onSubmit = async (data: LoginFormValues) => {
-    console.log(data); // Replace with actual login logic
+    const url = import.meta.env.VITE_BASE_API_AUTH_URL
+    const loginEndpoint = url + "/login"
+
+    const responseBody = {
+      username: data.username,
+      password: data.password
+    }
+
+    const options = {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify(responseBody)
+    }
+
+    try{
+      const response = await fetch(loginEndpoint, options)
+      const authTokens: LoginResponse = await response.json() 
+      Cookies.set("access", authTokens.access, {expires: 1})
+      if (authTokens.refresh){
+        Cookies.set("refresh", authTokens.refresh, {expires: 7})
+      }
+      alert("Signed in")
+      navigate("/")
+
+    } catch(e){
+      alert("Failed to login with error: " + e)
+    }
   };
 
   return (
@@ -31,9 +67,9 @@ const LoginForm: React.FC = () => {
           <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
             <div>
               <Input
-                type="email"
-                placeholder="Enter your email"
-                {...register("email", { required: "Email is required" })}
+                type="text"
+                placeholder="Enter your username"
+                {...register("username", { required: "Username is required" })}
               />
             </div>
             <div>

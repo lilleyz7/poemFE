@@ -1,12 +1,11 @@
 
 import './App.css'
-import Login from './components/LoginForm'
 
 function App() {
 
   return (
     <>
-      <Login/>
+      <p>Hello word</p>
     </>
   )
 }
