@@ -1,16 +1,25 @@
 import Navbar from "@/components/NavBar"
 import SearchBar from "@/components/SearchBar"
 import { Button } from "@/components/ui/button";
-import { RandomRequest } from "@/lib/poemRequest";
+import { ByTitleRequest, RandomRequest } from "@/lib/poemRequest";
 import { Poem } from "@/types/Poem";
 import { useState } from "react";
 
 const SearchPage: React.FC = () => {
     const [activePoems, setActivePoems] = useState<Poem[]>();
     const [isSearching, setIsSearching] = useState(false)
-    const handleSearch = (query: string) => {
+    
+    const handleSearch = async (query: string) => {
         console.log("Searching for:", query);
-        // Add your search logic here
+        setIsSearching(true)
+        try{
+            const poems = await ByTitleRequest(query)
+            setActivePoems(poems)
+            setIsSearching(false)
+        } catch(e){
+            setIsSearching(false)
+            alert(e)
+        }
       };
 
     const randomSearch = async () => {

@@ -1,4 +1,5 @@
 import { Poem } from "@/types/Poem";
+import { PoemRequestType } from "@/types/PoemRequestEnum";
 import Cookies from "js-cookie";
 
 export const RandomRequest =  async (): Promise<Poem[]> => {
@@ -12,7 +13,7 @@ export const RandomRequest =  async (): Promise<Poem[]> => {
     }
 
     try{
-        const data = await makeRequest(finalUrl, options)
+        const data = await makeRequest(finalUrl, options, PoemRequestType.Multi)
         return data
     } catch(e){
         alert(e)
@@ -38,21 +39,24 @@ export const ByTitleRequest = async (title: string): Promise<Poem[]> => {
     }
 
     try{
-        const data = await makeRequest(finalUrl, options)
+        const data = await makeRequest(finalUrl, options, PoemRequestType.Single)
         return data
     } catch(e){
         alert(e)
-        const data: Poem[] = []
-        return data
+        throw new Error("Failed to make request: " + e)
     }
 }
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
-const makeRequest = async (url: string, options: any) =>{
+const makeRequest = async (url: string, options: any, requestType: PoemRequestType) =>{
     try{
         const response = await fetch(url, options)
-        const poems: Poem[] = await response.json()
-        return poems
+        if (requestType == PoemRequestType.Multi){
+            const poems: Poem[] = await response.json()
+            return poems
+        }
+        const poem = await response.json()
+        return poem
     } catch (e){
         alert(e)
         const poems: Poem[] = []

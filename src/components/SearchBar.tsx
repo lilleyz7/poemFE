@@ -7,7 +7,7 @@ interface SearchBarProps {
   onSearch: (query: string) => void;
 }
 
-const SearchBar: React.FC<SearchBarProps> = ({ placeholder = "Search...", onSearch }) => {
+const SearchBar: React.FC<SearchBarProps> = ({ placeholder = "Search by title...", onSearch }) => {
   const [query, setQuery] = useState("");
 
   const handleSearch = () => {
