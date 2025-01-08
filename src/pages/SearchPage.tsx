@@ -1,4 +1,5 @@
 import Navbar from "@/components/NavBar"
+import PoemCard from "@/components/PoemCard";
 import SearchBar from "@/components/SearchBar"
 import { Button } from "@/components/ui/button";
 import { ByTitleRequest, RandomRequest } from "@/lib/poemRequest";
@@ -6,15 +7,15 @@ import { Poem } from "@/types/Poem";
 import { useState } from "react";
 
 const SearchPage: React.FC = () => {
-    const [activePoems, setActivePoems] = useState<Poem[]>();
+    const [activePoem, setActivePoem] = useState<Poem>();
     const [isSearching, setIsSearching] = useState(false)
-    
+
     const handleSearch = async (query: string) => {
         console.log("Searching for:", query);
         setIsSearching(true)
         try{
-            const poems = await ByTitleRequest(query)
-            setActivePoems(poems)
+            const poem: Poem = await ByTitleRequest(query)
+            setActivePoem(poem)
             setIsSearching(false)
         } catch(e){
             setIsSearching(false)
@@ -25,8 +26,9 @@ const SearchPage: React.FC = () => {
     const randomSearch = async () => {
         setIsSearching(true)
         try{
-            const poems = await RandomRequest()
-            setActivePoems(poems)
+            const poem = await RandomRequest()
+            console.log(poem)
+            setActivePoem(poem)
         } catch(e){
             setIsSearching(false)
             alert(e)
@@ -44,9 +46,9 @@ const SearchPage: React.FC = () => {
                 <p>Searching...</p>
             )}
 
-            {activePoems && activePoems.map((poem) => (
-                    <li key={poem.title}>{poem.title}</li>
-                ))}
+            {activePoem && (
+                <PoemCard poem={activePoem}/>
+            )}
         </div>
     )
 } 
