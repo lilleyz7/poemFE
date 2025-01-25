@@ -1,6 +1,6 @@
 import { Poem } from "@/types/Poem";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "./ui/card";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import Cookies from "js-cookie";
 import { SavePoem } from "@/lib/poemRequest";
 
@@ -11,17 +11,29 @@ interface PoemCardProps {
   const PoemCard: React.FC<PoemCardProps> = ({ poem }) => {
     const [userToken, setUserToken] = useState<string>("");
     const [isSaved, setIsSaved] = useState<boolean>(false);
+    const [error, setError] = useState("");
+    const [success, setSuccess] = useState("");
 
-    const token = Cookies.get("access")
-    if (token){
-      setUserToken(token)
-    }
+    useEffect(() => {
+      function getCookie(){
+        const token = Cookies.get("access")
+        if (token){
+        setUserToken(token)
+        }
+      }
+      getCookie()
+    },[])
 
     const savePoem = async () => {
-      const success = await SavePoem(poem, userToken)
-      if (success){
-        setIsSaved(!isSaved)
-        alert("Poem Saved")
+      try{
+        const success = await SavePoem(poem)
+        if (success){
+          setIsSaved(!isSaved)
+          setSuccess("Poem Successfully Saved")
+          alert("saved")
+        }
+      } catch(e){
+        setError(e+"")
       }
     }
     return (
@@ -32,24 +44,20 @@ interface PoemCardProps {
         </CardHeader>
         <CardContent>
           <div className="whitespace-pre-wrap text-gray-700">
-            <h1>{poem.title}</h1>
-            <h2>{poem.author}</h2>
             {poem.lines.map((line, index) => (
               <div>
               <p key={index} className="leading-relaxed">
                 {line}
               </p>
-              {isSaved && (
-                <button >Saved</button>
-              )}
-
-              {!isSaved && (
-              <button onClick={savePoem}>Save</button>
-              )}
               </div>
             ))}
           </div>
         </CardContent>
+          {userToken && (
+              <button onClick={savePoem}>Save</button>
+            )}
+        {error && <p className="text-red-500 mt-4">{error}</p>}
+        {success && <p className="text-green-500 mt-4">{success}</p>}
       </Card>
     );
   };

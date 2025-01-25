@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useEffect } from "react";
 import { useForm } from "react-hook-form";
 import { Card, CardHeader, CardTitle, CardContent, CardFooter} from "@/components/ui/card";
 import { Button } from "./ui/button";
@@ -17,10 +17,15 @@ const RegistrationForm: React.FC = () => {
 
   const navigate = useNavigate()
 
-  const isLoggedIn = CheckAuth();
-  if (isLoggedIn){
-    navigate("/")
-  }
+  useEffect(() => {
+    const isLogged = async () => {
+      const isLoggedIn = await CheckAuth();
+      if (isLoggedIn){
+        navigate("/")
+      }
+    }
+    isLogged()
+  }, [navigate])
 
   const onSubmit = async (data: RegistrationFormValues) => {
     const url = "http://localhost:5158/api/Auth/Register"

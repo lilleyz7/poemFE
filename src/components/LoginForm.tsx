@@ -1,14 +1,13 @@
 import React from "react";
-import Cookies from 'js-cookie';
 import { useNavigate } from "react-router";
 import { useForm } from "react-hook-form";
 import { Card, CardHeader, CardTitle, CardContent, CardFooter} from "@/components/ui/card";
 import { Button } from "./ui/button";
 import { Input } from "./ui/input";
 import { NavLink } from "react-router";
-import LoginResponse from "@/types/LoginResponse";
-import { CheckAuth } from "@/lib/checkUser";
 import { LoginFormValues } from "@/types/LoginFormValues";
+import Cookies from "js-cookie";
+import LoginResponse from "@/types/LoginResponse";
 
 
 const LoginForm: React.FC = () => {
@@ -20,40 +19,36 @@ const LoginForm: React.FC = () => {
 
   const navigate = useNavigate();
 
-  const isLoggedIn = CheckAuth()
-  if (isLoggedIn){
-    navigate("/")
-  }
-
   const onSubmit = async (data: LoginFormValues) => {
-    const url = import.meta.env.VITE_BASE_API_AUTH_URL
-    const loginEndpoint = url + "/login"
-
-    const responseBody = {
-      username: data.username,
-      password: data.password
-    }
+    const url = import.meta.env.VITE_BASE_API_URL
+    const loginEndpoint = url + "login"
 
     const options = {
       method: "POST",
       headers: {
+        "accept": '*/*',
         "Content-Type": "application/json",
+        
       },
-      body: JSON.stringify(responseBody)
+      body: JSON.stringify(data),
     }
 
     try{
       const response = await fetch(loginEndpoint, options)
-      const authTokens: LoginResponse = await response.json() 
-      Cookies.set("access", authTokens.access, {expires: 1})
-      if (authTokens.refresh){
-        Cookies.set("refresh", authTokens.refresh, {expires: 7})
+
+      if (!response.ok) {
+        const errorMessage = await response.text();
+        alert(`Failed to login: ${errorMessage}`);
+        return;
       }
-      alert("Signed in")
-      navigate("/")
+      const loginResponse: LoginResponse = await response.json()
+      Cookies.set("access", loginResponse.accessToken, { expires: loginResponse.expiresIn })
+      Cookies.set("refresh", loginResponse.refreshToken, {expires: loginResponse.expiresIn * 7})
+      navigate("/search")
 
     } catch(e){
       alert("Failed to login with error: " + e)
+      console.log(e)
     }
   };
 
@@ -68,8 +63,8 @@ const LoginForm: React.FC = () => {
             <div>
               <Input
                 type="text"
-                placeholder="Enter your username"
-                {...register("username", { required: "Username is required" })}
+                placeholder="Enter your email"
+                {...register("email", { required: "Email is required" })}
               />
             </div>
             <div>
